@@ -1,0 +1,33 @@
+[project]
+name = "fii-orchestrator"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Vitoria Sousa",email = "vitoria.sousa@stone.com.br"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.12.8"
+black = "^25.1.0"
+pre-commit = "^4.3.0"
+
+[tool.poetry]
+name = "fii-orchestrator"
+version = "0.1.0"
+description = "Orquestrador de IA multiagente para carteira de FIIs"
+readme = "README.md"
+# IMPORTANTE: mapear o pacote para a raiz src/
+packages = [{ include = "fii_orchestrator", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+# ...demais dependências

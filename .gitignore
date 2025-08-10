@@ -1,0 +1,17 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+
+# Arquivos temporários e cache
+*.log
+*.tmp
+
+# Arquivos locais
+.env
+.env.*
+.DS_Store
+
+# Dados brutos e temporários
+data/bronze/**
+data/meta/**
