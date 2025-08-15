@@ -39,6 +39,15 @@ make etl-prices
 ```
 Os arquivos Parquet serão gerados em `data/bronze/prices/` e `data/bronze/dividends/`.
 
+### Solução de problemas
+Se o `B3VendorProvider` não retornar registros, verifique:
+
+- se o diretório e os arquivos existem conforme `B3_VENDOR_DIR` e os nomes esperados;
+- se os padrões `B3_PRICE_GLOB` e `B3_DIV_GLOB` combinam com os arquivos;
+- se os cabeçalhos dos CSVs estão mapeados para `date,ticker,close,volume` e `ex_date,payment_date,ticker,value`;
+- se o período configurado (`PRICES_START`/`PRICES_END`) cobre os dados;
+- se os tickers nos arquivos coincidem com o esperado (ex.: `HGLG11F` vs `HGLG11`).
+
 ## Estrutura do projeto
 - `src/fii_orchestrator/etl/providers/` – implementações de provedores de dados.
 - `src/fii_orchestrator/etl/b3_prices.py` – ponto de entrada do ETL de preços.

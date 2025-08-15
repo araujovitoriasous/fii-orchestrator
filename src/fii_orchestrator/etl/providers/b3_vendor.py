@@ -6,12 +6,14 @@ from pathlib import Path
 import polars as pl
 from loguru import logger
 from dotenv import load_dotenv
-from fii_orchestrator.etl.schemas import PriceRecord, DividendRecord
+from fii_orchestrator.etl.schemas import DividendRecord, PriceRecord
 
 load_dotenv()
 
 # Diretório com arquivos CSV “oficiais” já baixados (SFTP, cron, etc.)
 B3_VENDOR_DIR = Path(os.getenv("B3_VENDOR_DIR", "./vendor/b3")).resolve()
+if not B3_VENDOR_DIR.exists():
+    logger.warning(f"B3 vendor directory {B3_VENDOR_DIR} not found")
 
 # Mapas de colunas (configuráveis no .env para não re-compilar)
 # Ex.: B3_PRICE_COLMAP='{"date":"DATA","ticker":"TICKER","close":"FECHAMENTO","volume":"VOLUME"}'
@@ -51,10 +53,20 @@ class B3VendorProvider:
         self.div_glob = os.getenv("B3_DIV_GLOB", "dividends_*.csv")
 
     def _iter_price_files(self):
-        yield from sorted(B3_VENDOR_DIR.glob(self.price_glob))
+        files = sorted(B3_VENDOR_DIR.glob(self.price_glob))
+        if not files:
+            logger.warning(
+                f"No price files matching {self.price_glob} under {B3_VENDOR_DIR}"
+            )
+        yield from files
 
     def _iter_div_files(self):
-        yield from sorted(B3_VENDOR_DIR.glob(self.div_glob))
+        files = sorted(B3_VENDOR_DIR.glob(self.div_glob))
+        if not files:
+            logger.warning(
+                f"No dividend files matching {self.div_glob} under {B3_VENDOR_DIR}"
+            )
+        yield from files
 
     def fetch_prices(self, ticker: str, start: datetime, end: datetime):
         ticker = ticker.upper()
@@ -84,6 +96,12 @@ class B3VendorProvider:
                     ]
                 )
             )
+
+            if out.height == 0:
+                logger.debug(
+                    f"{csv_path} sem dados para {ticker} entre {start.date()} e {end.date()}"
+                )
+                continue
 
             for r in out.iter_rows(named=True):
                 yield PriceRecord(
@@ -130,6 +148,12 @@ class B3VendorProvider:
                 )
                 .select(["ex_date", "payment_date", "ticker", "value"])
             )
+
+            if out.height == 0:
+                logger.debug(
+                    f"{csv_path} sem dados para {ticker} entre {start.date()} e {end.date()}"
+                )
+                continue
 
             for r in out.iter_rows(named=True):
                 yield DividendRecord(
