@@ -4,12 +4,12 @@ import polars as pl
 from loguru import logger
 from dotenv import load_dotenv
 
-from fii_orchestrator.config import BRONZE
-from fii_orchestrator.etl.schemas import FundRef
+from fii_orchestrator.infrastructure.config import get_config
+
 
 load_dotenv()
 
-REF_DIR = BRONZE / "reference"
+REF_DIR = get_config().database.bronze_dir / "reference"
 REF_DIR.mkdir(parents=True, exist_ok=True)
 FUNDS_PARQUET = REF_DIR / "funds.parquet"
 
