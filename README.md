@@ -1,6 +1,6 @@
 # 🏗️ FII Orchestrator
 
-**Sistema de orquestração de dados para Fundos Imobiliários (FIIs) com arquitetura empresarial de nível mundial**
+**Sistema de orquestração de dados para Fundos Imobiliários (FIIs)**
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116+-green.svg)](https://fastapi.tiangolo.com)
@@ -10,20 +10,7 @@
 
 ## 🎯 **Visão Geral**
 
-O FII Orchestrator é uma solução **empresarial de nível mundial** para coleta, processamento e análise de dados de Fundos Imobiliários brasileiros. O projeto implementa uma arquitetura moderna baseada em **Clean Architecture**, **Domain-Driven Design (DDD)**, **CQRS**, **Event Sourcing** e **Sagas**.
-
-## ✨ **Funcionalidades Principais**
-
-- **🏗️ Arquitetura Híbrida**: PostgreSQL (operacional) + ClickHouse (analítico) + Redis (cache)
-- **📊 API REST Profissional**: FastAPI com Swagger, rate limiting e tratamento de erros
-- **🔄 CQRS**: Separação de comandos e consultas para otimização
-- **📈 Event Sourcing**: Rastreamento completo de mudanças e auditoria
-- **🔄 Sagas**: Transações distribuídas com compensação automática
-- **💉 Injeção de Dependência**: Container DI profissional com dependency-injector
-- **🧪 Testes Profissionais**: 42 testes passando com cobertura configurada
-- **📝 Logging Estruturado**: Sistema de logs profissional com Loguru
-- **⚡ Performance**: Cache Redis, processamento paralelo e otimizações
-- **🛡️ Robustez**: Tratamento de erros global e configuração flexível
+O FII Orchestrator é uma solução **empresarial de nível mundial** para coleta, processamento e análise de dados de Fundos Imobiliários brasileiros.
 
 ## 🚀 **Instalação e Uso**
 
@@ -46,9 +33,9 @@ make lint                   # Verificar qualidade
 make clean                  # Limpar arquivos temporários
 ```
 
-## 🏗️ **Arquitetura Empresarial**
+## 🏗️ **Arquitetura**
 
-O sistema implementa uma **arquitetura hexagonal híbrida** de nível empresarial:
+O sistema implementa uma **arquitetura hexagonal híbrida**:
 
 ### **📊 Camadas da Aplicação**
 - **Presentation**: FastAPI com Swagger, rate limiting e tratamento de erros
@@ -218,34 +205,6 @@ docker run -p 8000:8000 fii-orchestrator
 - **Cache Hit Rate**: Redis performance
 - **Business Metrics**: FIIs processados, dados coletados
 
-## 🤝 **Contribuição**
-
-### **📋 Como Contribuir**
-1. Fork o projeto
-2. Crie uma branch para sua feature
-3. Implemente com testes
-4. Execute `make test` e `make lint`
-5. Abra um Pull Request
-
-### **🧪 Padrões de Teste**
-- **Unit Tests**: Para lógica de negócio
-- **Integration Tests**: Para APIs e bancos
-- **E2E Tests**: Para fluxos completos
-- **Coverage**: Mínimo de 80%
-
 ## 📄 **Licença**
 
 Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 🏆 **Status do Projeto**
-
-- **✅ Arquitetura**: Hexagonal híbrida implementada
-- **✅ CQRS**: Comandos e consultas separados
-- **✅ Event Sourcing**: Rastreamento de mudanças
-- **✅ Sagas**: Transações distribuídas
-- **✅ Testes**: 42 testes passando
-- **✅ API**: FastAPI com Swagger
-- **✅ Bancos**: PostgreSQL + ClickHouse + Redis
-- **✅ DI**: Container profissional implementado
-
-**🎯 Pronto para produção em escala empresarial!**
