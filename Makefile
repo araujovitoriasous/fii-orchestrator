@@ -37,16 +37,19 @@ performance-analysis:
 
 # 🧪 Testes
 test:
-	$(POETRY) run python -m pytest tests/ -v
+	$(POETRY) run pytest tests/ -v
 
-test-domain:
-	$(POETRY) run python -m pytest tests/test_domain.py -v
+test-unit:
+	$(POETRY) run pytest tests/unit/ -v
 
-test-application:
-	$(POETRY) run python -m pytest tests/test_application.py -v
+test-integration:
+	$(POETRY) run pytest tests/integration/ -v
+
+test-e2e:
+	$(POETRY) run pytest tests/e2e/ -v
 
 test-coverage:
-	$(POETRY) run python -m pytest tests/ --cov=fii_orchestrator --cov-report=html --cov-report=term
+	$(POETRY) run pytest tests/ --cov=src/fii_orchestrator --cov-report=html --cov-report=term
 
 # 🔧 Desenvolvimento
 ref-funds:
@@ -103,3 +106,7 @@ help:
 	@echo "  arch-test             - Testar arquitetura"
 	@echo "  arch-validate         - Validar camadas"
 	@echo "  help                  - Mostrar esta ajuda"
+# 🌐 API (Nova Camada Downstream)
+api-start:
+	$(POETRY) run python src/fii_orchestrator/main.py
+
