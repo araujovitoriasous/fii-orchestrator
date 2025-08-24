@@ -105,8 +105,53 @@ help:
 	@echo "  clean                 - Limpar arquivos temporários"
 	@echo "  arch-test             - Testar arquitetura"
 	@echo "  arch-validate         - Validar camadas"
+	@echo ""
+	@echo "🗄️ PostgreSQL:"
+	@echo "  postgres-setup        - Configurar PostgreSQL"
+	@echo "  postgres-start        - Iniciar PostgreSQL"
+	@echo "  postgres-stop         - Parar PostgreSQL"
+	@echo "  postgres-status       - Status dos serviços"
+	@echo "  postgres-backup       - Criar backup"
+	@echo "  test-db-connection    - Testar conexão"
+	@echo ""
 	@echo "  help                  - Mostrar esta ajuda"
 # 🌐 API (Nova Camada Downstream)
 api-start:
 	$(POETRY) run python src/fii_orchestrator/main.py
+
+# 🗄️ PostgreSQL
+postgres-start:
+	@echo "🚀 Iniciando PostgreSQL..."
+	docker-compose up -d postgres
+
+postgres-stop:
+	@echo "🛑 Parando PostgreSQL..."
+	docker-compose stop postgres
+
+postgres-restart:
+	@echo "🔄 Reiniciando PostgreSQL..."
+	docker-compose restart postgres
+
+postgres-logs:
+	@echo "📋 Logs do PostgreSQL..."
+	docker-compose logs -f postgres
+
+postgres-backup:
+	@echo "💾 Criando backup..."
+	@chmod +x scripts/backup-postgres.sh
+	@./scripts/backup-postgres.sh
+
+postgres-setup:
+	@echo "🔧 Configurando PostgreSQL..."
+	@chmod +x scripts/setup-postgres.sh
+	@./scripts/setup-postgres.sh
+
+postgres-status:
+	@echo "🔍 Status dos serviços..."
+	docker-compose ps
+
+# 🧪 Testes de Banco
+test-db-connection:
+	@echo "🔌 Testando conexão com PostgreSQL..."
+	$(POETRY) run python -c "from fii_orchestrator.infrastructure.database.postgres_service import PostgresService, PostgresConfig; from fii_orchestrator.infrastructure.config import get_config; config = get_config(); service = PostgresService(config.postgres); import asyncio; asyncio.run(service.initialize()); print('✅ Conexão PostgreSQL OK')"
 

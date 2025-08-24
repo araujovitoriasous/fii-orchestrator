@@ -72,6 +72,51 @@ class ProcessingConfig:
         )
 
 @dataclass(frozen=True)
+class PostgresConfig:
+    """Configuração do PostgreSQL."""
+    host: str
+    port: int
+    database: str
+    user: str
+    password: str
+    ssl_mode: str
+    max_connections: int
+    connection_timeout: int
+    command_timeout: int
+    
+    @property
+    def connection_string(self) -> str:
+        """Gera string de conexão."""
+        return (
+            f"postgresql://{self.user}:{self.password}@"
+            f"{self.host}:{self.port}/{self.database}"
+            f"?sslmode={self.ssl_mode}"
+        )
+    
+    @property
+    def dsn(self) -> str:
+        """Gera DSN para asyncpg."""
+        return (
+            f"host={self.host} port={self.port} "
+            f"dbname={self.database} user={self.user} "
+            f"password={self.password} sslmode={self.ssl_mode}"
+        )
+    
+    @classmethod
+    def from_env(cls) -> 'PostgresConfig':
+        return cls(
+            host=os.getenv("POSTGRES_HOST", "localhost"),
+            port=int(os.getenv("POSTGRES_PORT", "5432")),
+            database=os.getenv("POSTGRES_DB", "fii_orchestrator"),
+            user=os.getenv("POSTGRES_USER", "fii_user"),
+            password=os.getenv("POSTGRES_PASSWORD", "fii_secure_password_2024"),
+            ssl_mode=os.getenv("POSTGRES_SSL_MODE", "prefer"),
+            max_connections=int(os.getenv("POSTGRES_MAX_CONNECTIONS", "20")),
+            connection_timeout=int(os.getenv("POSTGRES_CONNECTION_TIMEOUT", "30")),
+            command_timeout=int(os.getenv("POSTGRES_COMMAND_TIMEOUT", "60"))
+        )
+
+@dataclass(frozen=True)
 class RSSConfig:
     """Configuração das fontes RSS."""
     sources: list[str]
@@ -82,7 +127,7 @@ class RSSConfig:
         sources_str = os.getenv("NEWS_RSS_SOURCES", "")
         sources = [s.strip() for s in sources_str.split(",") if s.strip()] if sources_str else [
             "https://www.infomoney.com.br/feed/",
-            "https://valor.globo.com/rss/",
+            "https://valor.globo.com.br/feed/",
             "https://www.suno.com.br/feed/"
         ]
         
@@ -95,6 +140,7 @@ class RSSConfig:
 class AppConfig:
     """Configuração principal da aplicação."""
     database: DatabaseConfig
+    postgres: PostgresConfig
     api: APIConfig
     processing: ProcessingConfig
     rss: RSSConfig
@@ -105,6 +151,7 @@ class AppConfig:
     def from_env(cls) -> 'AppConfig':
         return cls(
             database=DatabaseConfig.from_env(),
+            postgres=PostgresConfig.from_env(),
             api=APIConfig.from_env(),
             processing=ProcessingConfig.from_env(),
             rss=RSSConfig.from_env(),

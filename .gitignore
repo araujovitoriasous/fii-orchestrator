@@ -15,3 +15,8 @@ __pycache__/
 # Dados brutos e temporários
 data/bronze/**
 data/meta/**
+
+# PostgreSQL
+data/postgres/**
+data/backups/**
+.env
