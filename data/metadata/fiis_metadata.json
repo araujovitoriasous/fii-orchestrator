@@ -1,0 +1,90 @@
+{
+  "fiis": [
+    {
+      "ticker": "HGLG11",
+      "nome": "CSHG Logística",
+      "cnpj": "11.728.688/0001-47",
+      "tipo": "Logística"
+    },
+    {
+      "ticker": "XPML11",
+      "nome": "XP Malls",
+      "cnpj": "28.757.546/0001-00",
+      "tipo": "Shopping"
+    },
+    {
+      "ticker": "VISC11",
+      "nome": "Vinci Shopping Centers",
+      "cnpj": "12.516.185/0001-70",
+      "tipo": "Shopping"
+    },
+    {
+      "ticker": "KNRI11",
+      "nome": "Kinea Renda Imobiliária",
+      "cnpj": "12.005.956/0001-65",
+      "tipo": "Híbrido"
+    },
+    {
+      "ticker": "HGRE11",
+      "nome": "CSHG Renda Imobiliária",
+      "cnpj": "08.547.016/0001-34",
+      "tipo": "Híbrido"
+    },
+    {
+      "ticker": "VILG11",
+      "nome": "Vinci Logística",
+      "cnpj": "12.553.911/0001-06",
+      "tipo": "Logística"
+    },
+    {
+      "ticker": "BRCR11",
+      "nome": "BTG Pactual Corporate Office Fund",
+      "cnpj": "08.924.783/0001-01",
+      "tipo": "Lajes Corporativas"
+    },
+    {
+      "ticker": "BTAL11",
+      "nome": "BTG Pactual Logística",
+      "cnpj": "11.839.593/0001-09",
+      "tipo": "Logística"
+    },
+    {
+      "ticker": "XPIN11",
+      "nome": "XP Industrial",
+      "cnpj": "13.441.295/0001-75",
+      "tipo": "Logística"
+    },
+    {
+      "ticker": "HGBS11",
+      "nome": "CSHG Brasil Shopping",
+      "cnpj": "08.431.747/0001-06",
+      "tipo": "Shopping"
+    },
+    {
+      "ticker": "VSLH11",
+      "nome": "Vinci Shopping Centers",
+      "cnpj": "17.554.274/0001-25",
+      "tipo": "Shopping"
+    },
+    {
+      "ticker": "XPCM11",
+      "nome": "XP Corporate Office",
+      "cnpj": "13.441.295/0001-75",
+      "tipo": "Lajes Corporativas"
+    },
+    {
+      "ticker": "RBVA11",
+      "nome": "Rio Bravo Renda Varejo",
+      "cnpj": "11.552.157/0001-40",
+      "tipo": "Varejo"
+    }
+  ],
+  "periodo": {
+    "inicio": "2019-01-01",
+    "fim": "2025-01-01"
+  },
+  "descricao": "Metadata centralizado para FIIs - CNPJs validados com CVM",
+  "ultima_atualizacao": "2025-10-12",
+  "observacoes": "CNPJs corrigidos: HGLG11, HGBS11, VSLH11 agora usam CNPJs individuais da CVM (não da gestora)"
+}
+

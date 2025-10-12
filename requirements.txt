@@ -1,0 +1,48 @@
+# Data Processing and Analysis
+pandas>=1.5.0,<2.0  # Versão compatível com PyArrow
+numpy>=1.24.0,<2.0  # Versão compatível com PyArrow
+pyarrow>=10.0.0,<16.0  # Para suporte ao Parquet
+
+# Financial Data Collection
+yfinance>=0.2.0
+requests>=2.28.0
+python-bcb>=0.3.0  # Para dados do Banco Central do Brasil (SGS)
+
+# Web Scraping and Parsing
+beautifulsoup4>=4.11.0
+lxml>=4.9.0
+selenium>=4.10.0  # Para web scraping dinâmico
+pdfplumber>=0.7.0  # Para parsing de PDFs da CVM
+
+# Data Visualization (opcional para análise)
+matplotlib>=3.6.0
+seaborn>=0.12.0
+plotly>=5.15.0
+
+# Machine Learning (para Fase 2 - Agentes)
+scikit-learn>=1.2.0
+tensorflow>=2.12.0  # ou pytorch>=2.0.0
+openai>=0.27.0  # Para LLMs (se necessário)
+
+# Backtesting (para Fase 3)
+backtrader>=1.9.0
+zipline-reloaded>=2.2.0  # Alternativa ao backtrader
+
+# Database (opcional)
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0  # Para PostgreSQL
+
+# Utilities
+python-dotenv>=1.0.0
+schedule>=1.2.0  # Para agendamento de tarefas
+tqdm>=4.65.0  # Para barras de progresso
+
+# Development and Testing
+pytest>=7.2.0
+black>=23.0.0  # Formatação de código
+flake8>=6.0.0  # Linting
+jupyter>=1.0.0  # Para notebooks de análise
+
+# Optional: Advanced Analytics
+ta-lib>=0.4.0  # Indicadores técnicos
+empyrical>=0.5.0  # Métricas de performance
