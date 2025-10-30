@@ -25,18 +25,6 @@
       "tipo": "Híbrido"
     },
     {
-      "ticker": "HGRE11",
-      "nome": "CSHG Renda Imobiliária",
-      "cnpj": "08.547.016/0001-34",
-      "tipo": "Híbrido"
-    },
-    {
-      "ticker": "VILG11",
-      "nome": "Vinci Logística",
-      "cnpj": "12.553.911/0001-06",
-      "tipo": "Logística"
-    },
-    {
       "ticker": "BRCR11",
       "nome": "BTG Pactual Corporate Office Fund",
       "cnpj": "08.924.783/0001-01",
@@ -51,7 +39,7 @@
     {
       "ticker": "XPIN11",
       "nome": "XP Industrial",
-      "cnpj": "13.441.295/0001-75",
+      "cnpj": "28.516.325/0001-40",
       "tipo": "Logística"
     },
     {
@@ -69,14 +57,44 @@
     {
       "ticker": "XPCM11",
       "nome": "XP Corporate Office",
-      "cnpj": "13.441.295/0001-75",
+      "cnpj": "16.802.320/0001-03",
       "tipo": "Lajes Corporativas"
     },
     {
-      "ticker": "RBVA11",
-      "nome": "Rio Bravo Renda Varejo",
-      "cnpj": "11.552.157/0001-40",
-      "tipo": "Varejo"
+      "ticker": "HGRU11",
+      "nome": "CSHG Renda Urbana",
+      "cnpj": "29.641.226/0001-53",
+      "tipo": "Tijolo"
+    },
+    {
+      "ticker": "BTLG11",
+      "nome": "BTG Pactual Logística",
+      "cnpj": "11.839.593/0001-09",
+      "tipo": "Logística"
+    },
+    {
+      "ticker": "ALZR11",
+      "nome": "Alianza Trust Renda Imobiliária",
+      "cnpj": "28.737.771/0001-85",
+      "tipo": "Híbrido"
+    },
+    {
+      "ticker": "KNIP11",
+      "nome": "Kinea Índices de Preços",
+      "cnpj": "24.960.430/0001-13",
+      "tipo": "Recebíveis"
+    },
+    {
+      "ticker": "KNHY11",
+      "nome": "Kinea High Yield CRI",
+      "cnpj": "30.130.708/0001-28",
+      "tipo": "Recebíveis"
+    },
+    {
+      "ticker": "HGCR11",
+      "nome": "CSHG Recebíveis Imobiliários",
+      "cnpj": "11.160.521/0001-22",
+      "tipo": "Recebíveis"
     }
   ],
   "periodo": {
@@ -85,6 +103,6 @@
   },
   "descricao": "Metadata centralizado para FIIs - CNPJs validados com CVM",
   "ultima_atualizacao": "2025-10-12",
-  "observacoes": "CNPJs corrigidos: HGLG11, HGBS11, VSLH11 agora usam CNPJs individuais da CVM (não da gestora)"
+  "observacoes": "CNPJs corrigidos: HGLG11, HGBS11, VSLH11, XPIN11, XPCM11 agora usam CNPJs individuais da CVM (não da gestora)"
 }
 
