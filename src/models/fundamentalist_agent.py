@@ -12,8 +12,8 @@ Exemplo de uso:
 import pandas as pd
 from src.models.fundamentalist_agent import generate_fundamental_scores
 
-prices = pd.read_parquet(\"data/01_raw/prices.parquet\")
-fundamentals = pd.read_parquet(\"data/02_processed/fundamentals/fundamentals_trimestral.parquet\")
+prices = pd.read_parquet("data/01_raw/prices.parquet")
+fundamentals = pd.read_parquet("data/02_processed/fundamentals/fundamentals_trimestral.parquet")
 
 scores = generate_fundamental_scores(prices, fundamentals)
 print(scores.head())
@@ -23,19 +23,28 @@ print(scores.head())
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Mapping
+from typing import Mapping
 
 import numpy as np
 import pandas as pd
 
 
 REQUIRED_PRICE_COLUMNS: frozenset[str] = frozenset(
-    {"ticker", "data", "pvp", "vacancia", "dy_12m"}
+    {"ticker", "data", "pvp", "vacancia", "dy_12m", "vp_cota", "tipo_gestao"}
 )
 REQUIRED_FUND_COLUMNS: frozenset[str] = frozenset(
-    {"ticker", "data_referencia", "Lucro_Caixa_Trimestral"}
+    {
+        "ticker",
+        "data_referencia",
+        "Lucro_Caixa_Trimestral",
+        "Receita_Caixa",
+        "Liquidez_Caixa",
+        "Taxa_Administracao",
+    }
 )
-
+REQUIRED_DIVIDENDS_COLUMNS: frozenset[str] = frozenset(
+    {"ticker", "data", "dividendo"}
+)
 
 @dataclass(frozen=True)
 class FundamentalScoresConfig:
@@ -47,6 +56,10 @@ class FundamentalScoresConfig:
         weight_vacancia: Peso atribuído à Vacância ajustada e normalizada.
         weight_dy: Peso atribuído ao Dividend Yield (12m) normalizado.
         weight_lucro_growth: Peso atribuído ao crescimento do Lucro Caixa.
+        weight_receita_caixa: Peso atribuído à Receita Caixa normalizada.
+        weight_liquidez_caixa: Peso atribuído à Liquidez Caixa normalizada.
+        weight_taxa_administracao: Peso atribuído à Taxa de Administração ajustada.
+        weight_dividend_forward: Peso atribuído ao indicador de estabilidade/crescimento de dividendos.
 
     A configuração padrão assume pesos iguais para manter transparência na fase inicial.
     """
@@ -54,6 +67,10 @@ class FundamentalScoresConfig:
     weight_vacancia: float = 0.25
     weight_dy: float = 0.25
     weight_lucro_growth: float = 0.25
+    weight_receita_caixa: float = 0.25
+    weight_liquidez_caixa: float = 0.25
+    weight_taxa_administracao: float = 0.25
+    weight_dividend_forward: float = 0.25
 
     @property
     def weights(self) -> Mapping[str, float]:
@@ -62,6 +79,10 @@ class FundamentalScoresConfig:
             "vacancia_score": self.weight_vacancia,
             "dy_score": self.weight_dy,
             "lucro_growth_score": self.weight_lucro_growth,
+            "receita_caixa_score": self.weight_receita_caixa,
+            "liquidez_caixa_score": self.weight_liquidez_caixa,
+            "taxa_administracao_score": self.weight_taxa_administracao,
+            "dividend_forward_score": self.weight_dividend_forward,
         }
 
 
@@ -130,8 +151,9 @@ def _adjust_direction(latest_prices: pd.DataFrame) -> pd.DataFrame:
 
 
 def _compute_latest_lucro_growth(
-    fundamentals: pd.DataFrame, latest_funds: pd.DataFrame
-) -> pd.DataFrame:
+    fundamentals: pd.DataFrame, 
+    latest_funds: pd.DataFrame
+    ) -> pd.DataFrame:
     """
     Calcula o crescimento percentual mais recente do lucro caixa por ticker.
 
@@ -147,9 +169,7 @@ def _compute_latest_lucro_growth(
     fundamentals["data_referencia"] = _ensure_datetime(fundamentals, "data_referencia")
     fundamentals.sort_values(["ticker", "data_referencia"], inplace=True)
 
-    fundamentals["lucro_growth"] = fundamentals.groupby("ticker")[
-        "Lucro_Caixa_Trimestral"
-    ].pct_change()
+    fundamentals["lucro_growth"] = fundamentals.groupby("ticker")["Lucro_Caixa_Trimestral"].pct_change()
     fundamentals["lucro_growth"].replace([np.inf, -np.inf], np.nan, inplace=True)
     fundamentals["lucro_growth"] = fundamentals["lucro_growth"].clip(-0.5, 1.0)
 
@@ -166,8 +186,79 @@ def _compute_latest_lucro_growth(
     )
     joined.reset_index(inplace=True)
     return joined[
-        ["ticker", "data_referencia", "Lucro_Caixa_Trimestral", "lucro_growth"]
+        [
+            "ticker",
+            "data_referencia",
+            "Lucro_Caixa_Trimestral",
+            "Receita_Caixa",
+            "Liquidez_Caixa",
+            "Taxa_Administracao",
+            "lucro_growth",
+        ]
     ]
+
+def _compute_dividend_forward_metrics(
+    dividends: pd.DataFrame | None,
+    reference_dates: Mapping[str, pd.Timestamp],
+) -> pd.DataFrame:
+    """
+    Calcula métricas de dividendos futuros (forward):
+      - Dividend Yield Forward
+      - Payout Ratio Forward
+      - Crescimento do Dividendo Esperado
+    """
+
+    if dividends is None or dividends.empty:
+        return pd.DataFrame(
+            columns=[
+                "ticker",
+                "dividend_mean_12m",
+                "dividend_cv_12m",
+                "dividend_growth_12m",
+            ]
+        )
+
+    missing_div_cols = REQUIRED_DIVIDENDS_COLUMNS.difference(dividends.columns)
+    if missing_div_cols:
+        raise ValueError(
+            "DataFrame de dividendos não possui as colunas obrigatórias: "
+            f"{sorted(missing_div_cols)}"
+        )
+
+    dividends = dividends.copy()
+    dividends["data"] = _ensure_datetime(dividends, "data")
+
+    records: list[dict[str, float]] = []
+    for ticker, group in dividends.groupby("ticker"):
+        ref_date = reference_dates.get(ticker)
+        if pd.isna(ref_date):
+            continue
+        window_start = ref_date - pd.Timedelta(days=365)
+        recent = group[(group["data"] <= ref_date) & (group["data"] > window_start)]
+        if recent.empty:
+            continue
+        recent = recent.sort_values("data")
+        mean_value = float(recent["dividendo"].mean())
+        std_value = float(recent["dividendo"].std(ddof=0)) if len(recent) > 1 else 0.0
+        cv_value = std_value / mean_value if mean_value > 0 else np.nan
+
+        growth_value = np.nan
+        if len(recent) >= 2:
+            first = float(recent.iloc[0]["dividendo"])
+            last = float(recent.iloc[-1]["dividendo"])
+            if first > 0:
+                growth_value = (last / first) - 1.0
+
+        records.append(
+            {
+                "ticker": ticker,
+                "dividend_mean_12m": mean_value,
+                "dividend_cv_12m": cv_value,
+                "dividend_growth_12m": growth_value,
+            }
+        )
+
+    return pd.DataFrame(records)
 
 
 def _fill_weights(weights: Mapping[str, float]) -> Mapping[str, float]:
@@ -187,6 +278,7 @@ def _fill_weights(weights: Mapping[str, float]) -> Mapping[str, float]:
 def generate_fundamental_scores(
     data_prices: pd.DataFrame,
     data_fundamentals: pd.DataFrame,
+    data_dividends: pd.DataFrame | None = None,
     *,
     config: FundamentalScoresConfig | None = None,
 ) -> pd.DataFrame:
@@ -199,7 +291,8 @@ def generate_fundamental_scores(
     Args:
         data_prices: DataFrame com colunas `ticker`, `data`, `pvp`, `vacancia`, `dy_12m`.
         data_fundamentals: DataFrame com colunas `ticker`, `data_referencia`,
-            `Lucro_Caixa_Trimestral`.
+            `Lucro_Caixa_Trimestral`, `Receita_Caixa`, `Liquidez_Caixa`, `Taxa_Administracao`.
+        data_dividends: DataFrame opcional com histórico de proventos para cada ticker.
         config: Configuração opcional com os pesos das métricas.
 
     Returns:
@@ -251,11 +344,39 @@ def generate_fundamental_scores(
     metrics["pvp_raw"] = merged["pvp"]
     metrics["vacancia_raw"] = merged["vacancia"]
     metrics["dy_12m_raw"] = merged["dy_12m"]
+    metrics["vp_cota"] = merged["vp_cota"]
+    metrics["tipo_gestao"] = merged["tipo_gestao"]
     metrics["lucro_caixa_trimestral"] = merged["Lucro_Caixa_Trimestral"]
+    metrics["receita_caixa"] = merged["Receita_Caixa"]
+    metrics["liquidez_caixa"] = merged["Liquidez_Caixa"]
+    metrics["taxa_administracao"] = merged["Taxa_Administracao"]
     metrics["pvp_score"] = _min_max_normalize(merged["pvp_adjusted"])
     metrics["vacancia_score"] = _min_max_normalize(merged["vacancia_adjusted"])
     metrics["dy_score"] = _min_max_normalize(merged["dy_value"])
     metrics["lucro_growth_score"] = _min_max_normalize(merged["lucro_growth"])
+    metrics["receita_caixa_score"] = _min_max_normalize(metrics["receita_caixa"])
+    metrics["liquidez_caixa_score"] = _min_max_normalize(metrics["liquidez_caixa"])
+    taxa_norm = _min_max_normalize(metrics["taxa_administracao"])
+    metrics["taxa_administracao_score"] = 1 - taxa_norm
+
+    reference_dates = metrics.set_index("ticker")["data_preco"].to_dict()
+    dividend_metrics = _compute_dividend_forward_metrics(data_dividends, reference_dates)
+    if not dividend_metrics.empty:
+        metrics = metrics.merge(dividend_metrics, on="ticker", how="left")
+    else:
+        metrics["dividend_mean_12m"] = np.nan
+        metrics["dividend_cv_12m"] = np.nan
+        metrics["dividend_growth_12m"] = np.nan
+
+    cv_norm = _min_max_normalize(metrics["dividend_cv_12m"])
+    metrics["dividend_stability_score"] = 1 - cv_norm
+    growth_clipped = metrics["dividend_growth_12m"].clip(-0.5, 1.0)
+    metrics["dividend_growth_score"] = _min_max_normalize(growth_clipped)
+    metrics["dividend_forward_score"] = (
+        metrics[["dividend_stability_score", "dividend_growth_score"]]
+        .mean(axis=1, skipna=True)
+        .clip(0.0, 1.0)
+    )
 
     score_columns = [column for column in config.weights if column in metrics.columns]
     if not score_columns:
@@ -273,43 +394,8 @@ def generate_fundamental_scores(
     metrics = metrics.sort_values("score_fundamentalista", ascending=False)
     return metrics.reset_index(drop=True)
 
-
-def export_fundamental_scores_to_csv(
-    data_prices: pd.DataFrame,
-    data_fundamentals: pd.DataFrame,
-    output_path: str,
-    *,
-    config: FundamentalScoresConfig | None = None,
-    index: bool = False,
-    **csv_kwargs,
-) -> pd.DataFrame:
-    """
-    Calcula o score fundamentalista e salva o resultado em um arquivo CSV.
-
-    Args:
-        data_prices: DataFrame de preços com colunas mínimas exigidas pelo agente.
-        data_fundamentals: DataFrame de fundamentos trimestrais requerido pelo agente.
-        output_path: Caminho do arquivo CSV a ser gerado.
-        config: Configuração opcional para customizar os pesos das métricas.
-        index: Define se o índice do DataFrame deve ser persistido no CSV (default False).
-        **csv_kwargs: Argumentos adicionais enviados para `DataFrame.to_csv`.
-
-    Returns:
-        O DataFrame resultante utilizado na exportação.
-    """
-
-    scores = generate_fundamental_scores(
-        data_prices,
-        data_fundamentals,
-        config=config,
-    )
-    scores.to_csv(output_path, index=index, **csv_kwargs)
-    return scores
-
-
 __all__ = [
     "FundamentalScoresConfig",
-    "generate_fundamental_scores",
-    "export_fundamental_scores_to_csv",
+    "generate_fundamental_scores"
 ]
 
