@@ -1,6 +1,6 @@
 # Data Processing and Analysis
-pandas>=1.5.0,<2.0  # Versão compatível com PyArrow
-numpy>=1.24.0,<2.0  # Versão compatível com PyArrow
+pandas>=2.0.0
+numpy>=1.24.0
 pyarrow>=10.0.0,<16.0  # Para suporte ao Parquet
 
 # Financial Data Collection
