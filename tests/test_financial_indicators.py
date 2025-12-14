@@ -29,32 +29,42 @@ def test_integration():
         "Receita_Caixa": [5000, 8000],
         "Liquidez_Caixa": [200, 500],
         "Taxa_Administracao": [0.01, 0.01],
-        "Passivo_Total": [100, 200],
-        "Contas_Receber_Aluguel": [50, 80]
+        "Passivo_Total": [100, 200], # Old column, but good to keep
+        "Contas_Receber_Aluguel": [50, 80],
+        
+        # New columns for Leverage
+        "Valor_Ativo": [10000, 20000],
+        "Patrimonio_Liquido": [9000, 15000] 
+        # HGLG: Alavancagem = (10000 - 9000)/10000 = 0.10 (10%)
+        # KNRI: Alavancagem = (20000 - 15000)/20000 = 0.25 (25%)
+        # KNRI is MORE leveraged, so should have LOWER leverage score.
     })
 
     print("Calling process_financial_indicators...")
-    # Now it's deterministic, NO API KEY needed
     result = process_financial_indicators(prices, funds, cutoff_date="2023-12-31")
     
     print("Result columns:", result.columns)
     print("Result head:")
     print(result.head())
     
-    assert "score_fundamentalista" in result.columns
-    # Check if scores are not 0.0 (unless they should be)
-    # With these inputs, they should be normalized values.
-    # pvp 0.95 (KNRI) is better than 1.05 (HGLG). 
+    assert "alavancagem_score" in result.columns
+    assert "alavancagem_real" in result.columns
     
-    # HGLG PVP adj = 1 + (1-1.05) = 0.95
-    # KNRI PVP adj = 1 + (1-0.95) = 1.05
-    # KNRI should have better pvp_score.
+    hglg_data = result[result['ticker'] == 'HGLG11'].iloc[0]
+    knri_data = result[result['ticker'] == 'KNRI11'].iloc[0]
     
-    knri_score = result[result['ticker'] == 'KNRI11']['pvp_score'].values[0]
-    hglg_score = result[result['ticker'] == 'HGLG11']['pvp_score'].values[0]
+    print(f"HGLG Real Leverage: {hglg_data['alavancagem_real']}")
+    print(f"KNRI Real Leverage: {knri_data['alavancagem_real']}")
     
-    print(f"KNRI PVP Score: {knri_score}, HGLG PVP Score: {hglg_score}")
-    assert knri_score >= hglg_score
+    # Check absolute values approx
+    assert abs(hglg_data['alavancagem_real'] - 0.10) < 0.001
+    assert abs(knri_data['alavancagem_real'] - 0.25) < 0.001
+    
+    print(f"HGLG Leverage Score: {hglg_data['alavancagem_score']}")
+    print(f"KNRI Leverage Score: {knri_data['alavancagem_score']}")
+    
+    # HGLG (10%) is better/safer than KNRI (25%), so score should be higher
+    assert hglg_data['alavancagem_score'] >= knri_data['alavancagem_score']
     
     print("Test passed!")
 
