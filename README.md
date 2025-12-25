@@ -1,6 +1,7 @@
 # FII-O: Sistema de Coleta de Dados de FIIs
 
-Sistema completo de coleta, processamento e armazenamento de dados de Fundos de Investimento Imobiliário (FIIs) brasileiros, dados macroeconômicos e fundamentos financeiros.
+Sistema completo de coleta, processamento e armazenamento de dados de Fundos de Investimento Imobiliário (FIIs) brasileiros.
+O projeto evolui para um sistema inteligente (`FII-O`) que integra dados de mercado, macroeconômicos e fundamentos com **Agentes de I.A.** para análise automatizada de documentos e relatórios.
 
 ## 📊 Dados Coletados
 
@@ -84,7 +85,67 @@ Sistema completo de coleta, processamento e armazenamento de dados de Fundos de 
 - Taxa de Administração é obtida de relatórios mensais (`INF_MENSAL/complemento`) e agregada por trimestre
 - FIIs cobertos: 16 FIIs ativos
 
----
+87: ---
+88: 
+89: ### 4️⃣ Benchmark IFIX (`collect_ifix.py`)
+90: 
+91: **Fonte**: B3 (Arquivos CSV `ifix-YYYY.csv`)
+92: 
+93: **Período**: Histórico disponível nos arquivos CSV
+94: 
+95: **Arquivo gerado**: `data/01_raw/benchmark-ifix.parquet`
+96: 
+97: **Colunas**:
+98: - `data` (datetime): Data do pregão
+99: - `fechamento` (float): Valor de fechamento do índice IFIX
+100: 
+101: ---
+102: 
+103: ### 5️⃣ Relatórios Gerenciais e Financeiros (`collect_reports.py`)
+104: 
+105: **Fonte**: CVM (Dados Abertos - DFIN)
+106: 
+107: **Período**: 2019 a 2025
+108: 
+109: **Arquivo gerado**: `data/01_raw/reports_text/fii_dfin_text.parquet`
+110: 
+111: **Colunas**:
+112: - `cnpj` (str): CNPJ do fundo
+113: - `data_referencia` (str): Data de referência do documento
+114: - `data_entrega` (str): Data de entrega à CVM
+115: - `url` (str): Link original do PDF
+116: - `conteudo_texto` (str): Texto extraído do PDF (primeiras páginas)
+117: - `ano_competencia` (int): Ano de competência
+118: - `tipo_documento` (str): Tipo (ex: DFIN)
+119: 
+120: **Observações**:
+121: - O script baixa PDFs listados nos arquivos CSV da CVM e extrai o texto utilizando OCR/PDF mining.
+122: - Foca nos FIIs listados no metadata do projeto.
+123: 
+124: ---
+125: 
+126: ### 🧠 Agentes de I.A. (`src/agents`)
+127: 
+128: **Módulo**: `DocumentAnalyzer`
+129: 
+130: **Descrição**: Agente responsável por processar e analisar documentos financeiros (PDFs) coletados.
+131: 
+132: **Funcionalidades (Em Desenvolvimento)**:
+133: - Extração automatizada de texto e tabelas de relatórios gerenciais para estruturação de dados.
+134: - Análise de sentimento e insights operacionais.
+135: 
+136: ---
+137: 
+138: ### 🔮 Módulos Futuros (Roadmap)
+139: 
+140: O sistema está sendo expandido para incluir:
+141: 
+142: - **Orchestration** (`src/orchestration`): Gerenciamento de workflows complexos de dados.
+143: - **Backtest** (`src/backtest`): Simulação de estratégias de investimento baseadas nos dados coletados.
+144: - **Models** (`src/models`): Modelos preditivos para precificação e risco.
+145: - **Allocation** (`src/allocation`): Algoritmos de alocação de portfólio.
+146: 
+147: ---
 
 ## 🚀 Como Usar
 
@@ -121,6 +182,20 @@ cd src/etl
 python3 collect_fundamentals.py
 ```
 
+### Coletar Benchmark IFIX
+
+```bash
+cd src/etl
+python3 collect_ifix.py
+```
+
+### Coletar Relatórios (Text Mining)
+
+```bash
+cd src/etl
+python3 collect_reports.py
+```
+
 ---
 
 ## 📁 Estrutura de Diretórios
@@ -130,7 +205,9 @@ fii-o/
 ├── data/
 │   ├── 01_raw/                     # Dados brutos
 │   │   ├── prices.parquet          # Preços e dados Fundamentus
-│   │   └── dividends.parquet       # Histórico de proventos
+│   │   ├── dividends.parquet       # Histórico de proventos
+│   │   ├── benchmark-ifix.parquet  # Histórico do IFIX
+│   │   └── reports_text/           # Textos extraídos dos relatórios
 │   ├── 02_processed/               # Dados processados
 │   │   ├── market/
 │   │   │   └── macro_data.parquet  # Dados macroeconômicos
@@ -139,10 +216,17 @@ fii-o/
 │   └── metadata/
 │       └── fiis_metadata.json      # Metadata centralizado (tickers, CNPJs)
 ├── src/
-│   └── etl/
-│       ├── collect_fii_data.py     # Coleta FIIs
-│       ├── collect_macro.py        # Coleta macro
-│       └── collect_fundamentals.py # Coleta fundamentos
+│   ├── agents/                 # Agentes de I.A. (DocumentAnalyzer)
+│   ├── allocation/             # (Futuro) Alocação de portfólio
+│   ├── backtest/               # (Futuro) Engine de Backtest
+│   ├── etl/
+│   │   ├── collect_fii_data.py     # Coleta FIIs
+│   │   ├── collect_macro.py        # Coleta macro
+│   │   ├── collect_fundamentals.py # Coleta fundamentos
+│   │   ├── collect_ifix.py         # Coleta Benchmark IFIX
+│   │   └── collect_reports.py      # Coleta Relatórios CVM
+│   ├── models/                 # (Futuro) Modelos preditivos
+│   └── orchestration/          # (Futuro) Orquestração de tarefas
 └── requirements.txt
 ```
 
@@ -189,34 +273,3 @@ fii-o/
 - Metadata centralizado (`fiis_metadata.json`) com CNPJs validados com CVM
 - Mapeamento automático CNPJ → Ticker
 - Suporte a CNPJs compartilhados (ex: BTAL11 e BTLG11)
-
----
-
-## 📝 Observações Importantes
-
-1. **PMI Brasil**: Requer API key gratuita do FRED. Se não disponível, o sistema continua sem essa série.
-
-2. **Taxa de Administração**: Coletada via CVM (mensal) e agregada para análise trimestral.
-
-3. **Tipo de Gestão**: Coletado do Fundamentus (valores: Ativa, Definida).
-
-4. **Periodicidade**:
-   - Dados FIIs: Diários (apenas dias úteis)
-   - Macro: Diários (séries diárias) e Mensais (séries mensais propragadas)
-   - Fundamentos: Trimestrais (com Taxa de Administração agregada mensalmente)
-
-5. **Valor de Mercado**: Pode ser calculado multiplicando `preco_ajustado * num_cotas`.
-
----
-
-## 📅 Última Atualização
-
-- **Metadata**: 2025-10-12
-- **Código**: 2025-10-29
-
----
-
-## 📄 Licença
-
-Este projeto é de uso interno para análise de FIIs.
-
